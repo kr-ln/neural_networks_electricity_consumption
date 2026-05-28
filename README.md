@@ -67,11 +67,11 @@ Diagnostic logs from the out-of-sample Testing Set yield outstanding reliability
 
 ### Historical Test Performance (Actual vs. Predicted)
 The chart below highlights the model's high fidelity in tracking the daily stochastics and peak demand behaviors across the test slice.
-![Test Forecast](images/forecast_test.png)
+![Test Forecast](images/prediction_vs_real.png)
 
 ### 48-Hour Out-of-Sample Tactical Forecast
 The recursive prediction loop outputs the following load structure for the upcoming 48 hours, showcasing stable convergence without numerical decay.
-![Future Forecast](images/future_48h.png)
+![Future Forecast](images/prediction_next_48_hours.png)
 
 ---
 
