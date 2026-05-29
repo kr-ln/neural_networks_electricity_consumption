@@ -1,103 +1,177 @@
-# Brazil Electricity Demand Forecast ⚡🤖
+# 📊 Electricity Demand Forecasting in Brazil (Machine Learning Project)
 
-An end-to-end Machine Learning project delivering highly accurate hourly electricity demand forecasting for the **Norte (Northern) Subsystem** of Brazil's national interconnected power grid. Built with Python and Scikit-learn.
+## 🧠 Project Overview
 
----
+This project focuses on forecasting hourly electricity demand in **Brazil** using Machine Learning techniques.
 
-## 1. Project Overview & Business Impact
+The model was originally developed and trained using data from the **NORTH (NORTE) region of Brazil**, which serves as the base experimental dataset for analysis, preprocessing, model development, and evaluation of predictive performance.
 
-### Context & Background
-The National Grid Operator in Brazil (ONS) manages a massively complex, interconnected electrical network. Within this system, the **Norte Subsystem** presents a unique challenge: its high geographic isolation, coupled with sudden load surges from heavy industrial activity, creates massive volatility. Traditional linear forecasting models fail to capture the non-linear, time-dependent human and industrial behaviors that dictate modern energy consumption.
-
-### Importance & Strategic Value
-* **Grid Reliability:** Accurate hourly forecasting prevents critical power blackouts by allowing proactive grid load balancing.
-* **Financial Optimization:** Minimizes the activation of high-cost, high-emission thermoelectric backup plants.
-* **Asset Maintenance:** Enables power grid operators to safely schedule tactical maintenance windows during predicted low-demand periods.
+To extend usability beyond a fixed regional scope, an interactive **Streamlit web application** was developed, allowing users to explore and train the model dynamically across different regions of Brazil.
 
 ---
 
-## 2. Methodology & Pipeline Workflow
+## 🎯 Objective
 
-The project implements a rigorous, structured engineering workflow to transform raw streaming data into a highly stable predictive asset:
+The objective of this project is to model and forecast short-term electricity demand in **Brazil**, using historical consumption data to understand regional load behavior and improve predictive accuracy in time series forecasting.
 
-1. **Data Ingestion:** Automated consumption of the authenticated historical feed from the ONS repository hosted on Hugging Face (`SamuelM0422/Hourly-Electricity-Demand-Brazil-Dataset`), pulling **46,320 original hourly records**.
-2. **Target Isolation:** The dataset is filtered using the categorical label `nom_subsistema == 'NORTE'`, isolating `val_cargaenergiahomwmed` as our unique continuous target variable.
-3. **Temporal Integrity:** Rows are explicitly converted into `datetime` timestamps and sorted chronologically. This is a critical step to ensure that no future sequences are mixed into past training structures.
-4. **Data Splitting (Anti-Leakage Protocol):** The temporal sequence is partitioned into an **80% Training Set (37,036 samples)** and a **20% Testing Set (9,260 samples)** using a strict chronological cutoff point. This guarantees that the model evaluates its accuracy purely on unseen future data.
+This is formulated as a **supervised time series regression problem** using a neural network-based architecture.
 
 ---
 
-## 3. Advanced Technical Implementation
+## 📦 Dataset
 
-This section details the explicit mathematical and computational configurations applied within the Python pipeline:
+The dataset is sourced from Hugging Face:
 
-### Data Feature Scaling
-To protect the neural network from gradient saturation and speed up backpropagation convergence, the energy values (originally scaling into thousands of Megawatts) are normalized into a strict $[0, 1]$ boundary using `MinMaxScaler`:
+- 📊 Source: `SamuelM0422/Hourly-Electricity-Demand-Brazil-Dataset`
+- ⏱️ Frequency: Hourly electricity demand data across Brazil
+- 🌍 Features: Region (Brazil), timestamp, electricity load (MWmed)
 
-$$x' = \frac{x - x_{\min}}{x_{\max} - x_{\min}}$$
+### 📌 Modeling Scope
 
-### Time-Series Lag Engineering (Matrix Construction)
-Instead of employing computationally heavy recurrent layers (RNN/LSTM), the pipeline restructures the univariate array into a supervised learning matrix using a sliding window approach with a **lookback horizon of 24 hourly steps ($T_{-1}$ to $T_{-24}$)**.
-* **Immediate Inertia:** Rezagos $T_{-1}$ and $T_{-2}$ provide the core baseline continuity of the thermal grid load.
-* **Circadian Recurrence Relevance:** Statistical correlation spikes heavily at $T_{-24}$, allowing the network to internalize fixed daily human patterns (e.g., peak afternoon hours vs. early morning drops).
-
-### Neural Network Architecture (`MLPRegressor`)
-The model utilizes a Deep Multi-Layer Perceptron architecture instantiated via Scikit-learn with the following hyperparameters:
-* **Hidden Layer Topology:** `hidden_layer_sizes=(100, 50)` — A dense dual-layer structure designed to map highly non-linear temporal interactions.
-* **Activation Function:** `activation='relu'` (Rectified Linear Unit) to prevent vanishing gradient problems.
-* **Optimization Solver:** `solver='adam'` for stochastic gradient descent with adaptive step-sizes based on first and second moments.
-* **Convergence Control:** `max_iter=500` coupled with automated **Early Stopping** to stop training the moment validation loss plateaus, effectively mitigating overfitting.
-
-### Recursive Multi-Step Multi-Forecasting
-To project a **48-hour future tactical horizon**, a recursive simulation loop was built. The network predicts the immediate next step ($T_{+1}$), and this output is appended back into the sliding window vector via an array shift (`np.roll`), dropping the oldest hour ($T_{-24}$) and inserting the new prediction at the end ($T_{-1}$) to recursively solve for $T_{+2}$ up to $T_{+48}$.
+- The **original model training, validation, and testing** were performed exclusively on the **NORTE region of Brazil**
+- This region serves as the **baseline experimental environment**
+- The Streamlit application enables **multi-region exploration across Brazil**
 
 ---
 
-## 4. Experimental Results & Operational Interpretation
+## ⚙️ Methodology
 
-Diagnostic logs from the out-of-sample Testing Set yield outstanding reliability metrics:
+### 1. Data Preprocessing
+- Filtering dataset by region (initial focus: NORTE, Brazil)
+- Timestamp conversion and temporal ordering
+- Feature selection (electric demand in MWmed)
+- Scaling using `MinMaxScaler`
 
-* **0.0172 (1.72%) Normalized Error Standard Deviation:** This represents our baseline accuracy. A relative error under 2% is considered an elite benchmark in power systems engineering (where industry tolerance sits at < 5%).
-* **182.13 MWmed RMSE (Root Mean Squared Error):** Because RMSE heavily penalizes large errors, this low score mathematically proves that the model successfully tracks high peak demands without extreme desynchronizations or flattening the curve.
-* **136.24 MWmed Error Standard Deviation:** Confirms that the residual deviations are tightly clustered around zero. The absence of chaotic outliers or systemic drift ensures that operators can trust the model's reliability boundaries.
+### 2. Time Series Transformation
+- Sliding window approach (24-hour lag structure)
+- Each input sequence of 24 hours predicts the next hourly demand value
+
+### 3. Model Architecture
+- Neural Network: `MLPRegressor`
+- Hidden layers: (100, 50)
+- Activation function: ReLU
+- Optimizer: Adam
+- Max iterations: 500
+
+### 4. Evaluation Metrics
+- RMSE (Root Mean Squared Error)
+- Standard deviation of residual errors
+- Normalized error standard deviation
 
 ---
 
-## 5. Visualizations & Projections
+## 📊 Experimental Results & Operational Interpretation (NORTE Region)
 
-### Historical Test Performance (Actual vs. Predicted)
-The chart below highlights the model's high fidelity in tracking the daily stochastics and peak demand behaviors across the test slice.
+Diagnostic logs from the out-of-sample **Testing Set (NORTE region of Brazil)** yield the following reliability metrics:
+
+* **0.0172 (1.72%) Normalized Error Standard Deviation:**  
+  This represents the baseline accuracy of the model in the NORTE region. A relative error under 2% is considered an elite benchmark in power systems forecasting, where industry tolerance typically sits below 5%.
+
+* **182.13 MWmed RMSE (Root Mean Squared Error):**  
+  Since RMSE heavily penalizes large deviations, this low value demonstrates that the model successfully tracks peak demand behavior in the NORTE region without significant desynchronization or curve flattening.
+
+* **136.24 MWmed Error Standard Deviation:**  
+  This confirms that residual errors are tightly clustered around zero, indicating high stability and the absence of systemic drift or extreme outliers in the NORTE region forecasts.
+
+---
+
+## 📊 Visualizations & Projections (NORTE Region)
+
+### 📈 Historical Test Performance (Actual vs Predicted - NORTE)
+The chart below illustrates the model's high fidelity in capturing daily demand dynamics and peak load behavior in the **NORTE region of Brazil**.
+
 ![Test Forecast](images/prediction_vs_real.png)
 
-### 48-Hour Out-of-Sample Tactical Forecast
-The recursive prediction loop outputs the following load structure for the upcoming 48 hours, showcasing stable convergence without numerical decay.
+---
+
+### 🔮 48-Hour Out-of-Sample Forecast (NORTE)
+The recursive forecasting mechanism generates stable short-term predictions for the **NORTE region of Brazil**.
+
 ![Future Forecast](images/prediction_next_48_hours.png)
 
 ---
 
-## 🚀 Quick Start & Usage
+## 🌐 Streamlit Web Application
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/yourusername/neural_networks_electricity_consumption.git](https://github.com/yourusername/neural_networks_electricity_consumption.git)
-   ```
+An interactive Streamlit application was developed to operationalize the model beyond static execution.
 
-2. **Install required dependencies:**
-```bash
-pip install numpy pandas matplotlib scikit-learn datasets
+### Key Features:
+- 📥 Dynamic loading of electricity demand dataset (Brazil)
+- 🌍 Region selector (multi-region analysis across Brazil)
+- 🤖 Interactive model training
+- 📊 Real-time performance metrics
+- 📈 Visual comparison (actual vs predicted)
+- 🔮 48-hour forecasting module
+
+### Key Design Difference:
+
+- **Original system:** fixed analytical pipeline on the **NORTE region of Brazil**
+- **Streamlit system:** generalized framework for **multi-region exploration across Brazil**
+
+---
+
+## 🚀 How to Run the Project
+
+### ▶️ 1. Run Streamlit App
+
+```python
+streamlit run app.py
 ```
 
+📌 To stop the Streamlit application while running in the terminal, press:
 
-3. **Execute the pipeline:**
-```bash
-python main.py
+```
+Ctrl + C
 ```
 
+This will immediately terminate the local server.
 
+### ▶️ 2. Run Original Script (Optional / Research Version)
 
-## 📂 Environment Tech Stack
+If you want to execute the original Python script (non-interactive version):
 
-* **Language Environment:** Python 3
-* **Mathematical Operations:** NumPy, Pandas
-* **Machine Learning Engine:** Scikit-learn (`MLPRegressor`, `MinMaxScaler`)
-* **Visualization Framework:** Matplotlib
+```python
+main.py
+```
+
+This version runs the full pipeline using the NORTE region of Brazil as the fixed dataset and prints results directly in the terminal.
+
+#### 📁 Project Structure
+
+```
+├── app.py                  # Streamlit application (multi-region Brazil)
+
+├── original_script.py     # Original NORTE region model
+
+├── README.md               # Project documentation
+
+├── requirements.txt        # Dependencies
+
+└── images/                 # Visual outputs (NORTE region results)
+```
+
+#### 💡 Key Learnings
+
+Time series forecasting using neural networks
+
+Electricity demand modeling in Brazil (NORTE baseline analysis)
+
+Importance of region-specific training for load forecasting
+
+Feature engineering for sequential data
+
+Deployment of ML systems using Streamlit
+
+Translation of research-grade code into interactive applications
+
+#### 🌱 Future Improvements
+
+- Implementation of LSTM / GRU architectures
+
+- Integration of exogenous variables (weather, holidays in Brazil)
+
+- Hyperparameter optimization
+
+- Cloud deployment of Streamlit application
+
+- Anomaly detection for demand spikes
