@@ -79,8 +79,7 @@ The recursive prediction loop outputs the following load structure for the upcom
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/yourusername/neural_networks_electricity_consumption.git](https://github.com/yourusername/brazil-electricity-forecast.git)
-   cd brazil-electricity-forecast
+   git clone [https://github.com/yourusername/neural_networks_electricity_consumption.git](https://github.com/yourusername/neural_networks_electricity_consumption.git)
    ```
 
 2. **Install required dependencies:**
@@ -92,7 +91,6 @@ pip install numpy pandas matplotlib scikit-learn datasets
 3. **Execute the pipeline:**
 ```bash
 python main.py
-
 ```
 
 
