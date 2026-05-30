@@ -10,7 +10,7 @@ from datasets import load_dataset
 
 st.set_page_config(page_title="Electricity Forecast App", layout="wide")
 
-st.title("📊 Electricity Demand Prediction with Machine Learning")
+st.title("📊 Electricity Demand Forecasting in Brazil (Machine Learning Project with MLPRegressor)")
 st.write("MLPRegressor model for hourly electricity consumption forecasting in Brazil")
 
 # =========================
