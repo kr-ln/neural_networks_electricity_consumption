@@ -1,4 +1,4 @@
-# 📊 Electricity Demand Forecasting in Brazil (Machine Learning Project with MLPRegressor)
+# 📊 Electricity Demand Forecasting in Brazil (Machine Learning Project with Multi-Layer Perceptron Neural Networks)
 
 ## 🧠 Project Overview
 
